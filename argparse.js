@@ -1080,6 +1080,13 @@ const ArgumentDefaultsHelpFormatter = _camelcase_alias(_callable(class ArgumentD
 
     _get_help_string(action) {
         let help = action.help
+
+        // If the action already appended its own default argument description,
+        // then don't attempt to caculate an additional or new one.
+        if (action.has_default_help_hint === true) {
+            return help
+        }
+
         // LEGACY (v1 compatibility): additional check for defaultValue needed
         if (!action.help.includes('%(default)') && !action.help.includes('%(defaultValue)')) {
             if (action.default !== SUPPRESS) {
@@ -1265,6 +1272,7 @@ const Action = _camelcase_alias(_callable(class Action extends _AttributeHolder(
         this.required = required
         this.help = help
         this.metavar = metavar
+        this.has_default_help_hint = false
     }
 
     _get_kwargs() {
@@ -1325,8 +1333,10 @@ const BooleanOptionalAction = _camelcase_alias(_callable(class BooleanOptionalAc
             }
         }
 
+        let did_appened_default_help_desc = false
         if (help !== undefined && default_value !== undefined) {
             help += ` (default: ${default_value})`
+            did_appened_default_help_desc = true
         }
 
         super({
@@ -1340,6 +1350,8 @@ const BooleanOptionalAction = _camelcase_alias(_callable(class BooleanOptionalAc
             help,
             metavar
         })
+
+        this.has_default_help_hint = did_appened_default_help_desc
     }
 
     call(parser, namespace, values, option_string = undefined) {

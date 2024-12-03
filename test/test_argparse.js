@@ -845,6 +845,29 @@ class ParserTestCase extends TestCase {
     }
 }).run()
 
+;(new class TestBooleanOptionalActionHelpWithArgumentDefaultsHelpFormatter extends TestCase {
+    // Test that using BooleanOptionalAction with ArgumentDefaultsHelpFormatter
+    // doesn't result in duplicate '(default: <value>)' suffixes.
+
+    // See https://github.com/nodeca/argparse/issues/177
+
+    test_no_duplicate_default_desc() {
+        const parser = argparse.ArgumentParser({
+            formatter_class: argparse.ArgumentDefaultsHelpFormatter,
+        })
+        parser.add_argument('-e', '--an-example', {
+            help: 'Example',
+            action: argparse.BooleanOptionalAction,
+            default: true
+        })
+        const parser_help = parser.format_help()
+        const default_regex_rs = parser_help.match(/\(default: /g)
+        this.assertNotEqual(default_regex_rs, null)
+        const num_default_arg_descriptions = default_regex_rs.length
+        this.assertEqual(num_default_arg_descriptions, 1)
+    }
+}).run()
+
 ;(new class TestBooleanOptionalActionRequired extends ParserTestCase {
     /* Tests BooleanOptionalAction required */
 
